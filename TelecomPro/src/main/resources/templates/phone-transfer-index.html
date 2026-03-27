@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>携号转网信息录入</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            margin: 0;
+            background: linear-gradient(160deg, #eef4ff 0%, #f8fbff 55%, #ffffff 100%);
+            color: #1f2937;
+        }
+        .container {
+            max-width: 720px;
+            margin: 48px auto;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 32px;
+            border-radius: 18px;
+            box-shadow: 0 18px 48px rgba(15, 23, 42, 0.12);
+        }
+        h1 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            text-align: center;
+            color: #0f4c81;
+        }
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 28px;
+            line-height: 1.7;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        input[type=text], input[type=number], select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #d7deea;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 14px;
+            background: #fbfdff;
+        }
+        input[type=submit] {
+            width: 100%;
+            padding: 14px;
+            background: #1368ce;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .info-text {
+            color: #6b7280;
+            font-size: 12px;
+            margin-top: 6px;
+        }
+        .service-box {
+            margin-top: 22px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            background: #eef6ff;
+            color: #1d4f91;
+            line-height: 1.7;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>携号转网信息录入</h1>
+    <div class="subtitle">
+        请选择目标运营商并提交号码信息，后端会按运营商规则同步修改 `mobile` / `unicom` 两个库。
+    </div>
+
+    <form th:action="@{/transfer/transferNumber}" method="post" th:object="${cellPhoneInfo}">
+        <div class="form-group">
+            <label for="targetCarrier">目标运营商</label>
+            <select id="targetCarrier" th:field="*{targetCarrier}" required>
+                <option value="UNICOM">转入联通</option>
+                <option value="MOBILE">转入移动</option>
+            </select>
+            <div class="info-text">转入联通会调用 UnicomPro，转入移动会调用 TelecomPro 本地服务端。</div>
+        </div>
+
+        <div class="form-group">
+            <label for="cellPhoneNumber">手机号</label>
+            <input type="text" id="cellPhoneNumber" th:field="*{cellPhoneNumber}" pattern="[0-9]{11}" maxlength="11" required />
+        </div>
+
+        <div class="form-group">
+            <label for="remainMoney">账户余额</label>
+            <input type="number" id="remainMoney" th:field="*{remainMoney}" step="0.01" min="0" required />
+        </div>
+
+        <div class="form-group">
+            <label for="orderDesc">套餐说明</label>
+            <input type="text" id="orderDesc" th:field="*{orderDesc}" required />
+        </div>
+
+        <div class="form-group">
+            <label for="status">当前状态</label>
+            <select id="status" th:field="*{status}" required>
+                <option value="0">当前运营商号码</option>
+                <option value="1">已转出号码</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <input type="submit" value="提交携号转网信息" />
+        </div>
+    </form>
+
+    <div class="service-box">
+        当前联通服务地址：<span th:text="${serviceAddress}"></span>
+    </div>
+</div>
+</body>
+</html>
