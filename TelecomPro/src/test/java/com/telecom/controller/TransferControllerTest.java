@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -24,27 +25,15 @@ class TransferControllerTest {
     private PhoneLookupGatewayService phoneLookupGatewayService;
 
     @Test
-    void shouldCallUnicomGatewayWhenTargetCarrierIsUnicom() throws Exception {
+    void shouldAlwaysCallUnicomGateway() throws Exception {
         when(phoneLookupGatewayService.submitToUnicom(any(CellPhoneInfo.class))).thenReturn(successResponse());
 
         mockMvc.perform(post("/transfer/transferNumber")
-                        .param("cellPhoneNumber", "13311111111")
-                        .param("targetCarrier", "UNICOM"))
+                        .param("cellPhoneNumber", "13311111111"))
                 .andExpect(status().isOk());
 
         verify(phoneLookupGatewayService).submitToUnicom(any(CellPhoneInfo.class));
-    }
-
-    @Test
-    void shouldCallMobileGatewayWhenTargetCarrierIsMobile() throws Exception {
-        when(phoneLookupGatewayService.submitToMobile(any(CellPhoneInfo.class))).thenReturn(successResponse());
-
-        mockMvc.perform(post("/transfer/transferNumber")
-                        .param("cellPhoneNumber", "13311111111")
-                        .param("targetCarrier", "MOBILE"))
-                .andExpect(status().isOk());
-
-        verify(phoneLookupGatewayService).submitToMobile(any(CellPhoneInfo.class));
+        verifyNoMoreInteractions(phoneLookupGatewayService);
     }
 
     private TransferResponse successResponse() {

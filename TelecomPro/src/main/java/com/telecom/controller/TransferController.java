@@ -35,12 +35,11 @@ public class TransferController {
 
     @PostMapping("/transfer/transferNumber")
     public String transferNumber(@ModelAttribute CellPhoneInfo cellPhoneInfo, Model model) {
+        cellPhoneInfo.setTargetCarrier("UNICOM");
         model.addAttribute("cellPhoneInfo", cellPhoneInfo);
 
         try {
-            TransferResponse response = "MOBILE".equalsIgnoreCase(cellPhoneInfo.getTargetCarrier())
-                    ? phoneLookupGatewayService.submitToMobile(cellPhoneInfo)
-                    : phoneLookupGatewayService.submitToUnicom(cellPhoneInfo);
+            TransferResponse response = phoneLookupGatewayService.submitToUnicom(cellPhoneInfo);
             model.addAttribute("success", response.isSuccess());
             model.addAttribute("info", response.getMessage());
             model.addAttribute("nextStep", response.getNextStep());

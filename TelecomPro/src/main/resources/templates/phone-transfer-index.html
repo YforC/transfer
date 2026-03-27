@@ -7,7 +7,6 @@
     <style>
         :root {
             --surface: #dfe5ec;
-            --surface-soft: #e7ecf2;
             --text: #314252;
             --muted: #6f7f90;
             --accent: #58738f;
@@ -65,41 +64,6 @@
             font-size: 14px;
         }
 
-        .switch {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 22px;
-        }
-
-        .switch label {
-            display: block;
-            cursor: pointer;
-        }
-
-        .switch input {
-            position: absolute;
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .switch span {
-            display: block;
-            min-height: 48px;
-            padding: 14px 12px;
-            border-radius: 18px;
-            text-align: center;
-            color: var(--muted);
-            background: var(--surface);
-            box-shadow: var(--shadow-high), var(--shadow-low);
-            transition: .2s ease;
-        }
-
-        .switch input:checked + span {
-            color: var(--text);
-            box-shadow: var(--shadow-inset);
-        }
-
         .field {
             margin-bottom: 22px;
         }
@@ -150,31 +114,16 @@
             color: var(--muted);
             font-size: 12px;
         }
-
-        @media (max-width: 520px) {
-            .shell { padding: 24px 18px; border-radius: 26px; }
-            h1 { font-size: 26px; }
-            .switch { grid-template-columns: 1fr; }
-        }
     </style>
 </head>
 <body>
 <div class="shell">
     <div class="brand">MNP</div>
     <h1>携号转网</h1>
-    <div class="sub">输入手机号即可</div>
+    <div class="sub">转入联通</div>
 
     <form th:action="@{/transfer/transferNumber}" method="post" th:object="${cellPhoneInfo}">
-        <div class="switch" role="radiogroup" aria-label="目标运营商">
-            <label>
-                <input type="radio" th:field="*{targetCarrier}" value="UNICOM" />
-                <span>转入联通</span>
-            </label>
-            <label>
-                <input type="radio" th:field="*{targetCarrier}" value="MOBILE" />
-                <span>转入移动</span>
-            </label>
-        </div>
+        <input type="hidden" th:field="*{targetCarrier}" value="UNICOM" />
 
         <div class="field">
             <label for="cellPhoneNumber">手机号</label>
