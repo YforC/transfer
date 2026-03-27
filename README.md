@@ -1,49 +1,63 @@
 # transfer
 
-基于“携号转网”场景的双系统 Java Web 课程项目。
+一个基于 SOAP WebService 的双系统携号转网示例项目。
 
-仓库内包含两个独立系统：
+仓库包含两个独立的 Java Web 系统，分别模拟移动和联通两侧业务。两个系统既能发布 WSDL 服务，也能作为客户端调用对方服务，完成“携号转网”场景下的双向业务协作和双库状态同步。
 
-- `UnicomPro`：Spring + JSP + CXF + JDBC + MySQL
-- `TelecomPro`：Spring Boot + Thymeleaf + CXF + JdbcTemplate + MySQL
+## 项目概览
 
-两个系统通过 SOAP WebService 互相调用，模拟号码在不同运营商之间转入、转出的业务流程。
+- `TelecomPro`
+  - 技术栈：Spring Boot、Spring MVC、Thymeleaf、CXF、JdbcTemplate、MySQL
+  - 页面角色：只能发起“转入联通”
+  - 服务角色：对外提供“转入移动”SOAP 服务
+- `UnicomPro`
+  - 技术栈：Spring、Struts2、Hibernate、JSP、CXF、MySQL
+  - 页面角色：只能发起“转入移动”
+  - 服务角色：对外提供“转入联通”SOAP 服务
 
-## 项目目标
+## 系统调用关系
 
-本项目按照 `goat.txt` 的要求实现了以下内容：
+### 转入联通
 
-- 两个独立 Web 系统
-- 公用手机号套餐信息实体
-- 双向 WSDL 服务发布
-- 双向客户端请求转发
-- 携号转网成功后级联修改 `mobile` / `unicom` 两个数据库中的 `cell_phone_info`
+1. 用户访问 `TelecomPro`
+2. 页面只输入手机号
+3. `TelecomPro` 作为客户端调用 `UnicomPro` 的 SOAP 服务
+4. `UnicomPro` 在服务端执行转网逻辑
+5. 转网成功后同时更新 `mobile` 和 `unicom` 数据库
+
+### 转入移动
+
+1. 用户访问 `UnicomPro`
+2. 页面只输入手机号
+3. `UnicomPro` 作为客户端调用 `TelecomPro` 的 SOAP 服务
+4. `TelecomPro` 在服务端执行转网逻辑
+5. 转网成功后同时更新 `unicom` 和 `mobile` 数据库
 
 ## 业务规则
 
-`cell_phone_info.status` 的定义：
+两个数据库 `mobile`、`unicom` 中都包含 `cell_phone_info` 表。
 
-- `0`：当前运营商号码
-- `1`：已转出号码
+`cell_phone_info.status` 定义如下：
+
+- `0`：当前属于本运营商
+- `1`：已从本运营商转出
 
 转网成功时：
 
-1. 源运营商库中该号码更新为 `status = 1`
-2. 目标运营商库中该号码：
-   - 存在则更新
-   - 不存在则新增
-   - 最终状态设为 `status = 0`
+1. 源运营商库中的该号码更新为 `status = 1`
+2. 目标运营商库中的该号码执行 upsert
+3. 目标运营商库最终状态写为 `status = 0`
+4. 页面端不输入余额和套餐，服务端按手机号从源库读取并同步
 
 ## 仓库结构
 
 ```text
 .
-├─ TelecomPro/     # Spring Boot 侧，支持页面提交、调用联通服务、提供移动侧服务
-├─ UnicomPro/      # Spring MVC/JSP 侧，支持页面提交、调用移动服务、提供联通侧服务
-├─ mobile.sql      # mobile 数据库表结构和示例数据
-├─ unicom.sql      # unicom 数据库表结构和示例数据
-├─ goat.txt        # 题目要求
-└─ docs/           # 本次设计文档与实现计划
+├─ TelecomPro/   # 移动侧系统
+├─ UnicomPro/    # 联通侧系统
+├─ mobile.sql    # mobile 库初始化脚本
+├─ unicom.sql    # unicom 库初始化脚本
+└─ docs/         # 设计文档与实现计划
 ```
 
 ## 环境要求
@@ -52,134 +66,99 @@
 - Maven 3.8+
 - MySQL 8.x
 
-## 数据库准备
+## 快速开始
 
-先创建两个数据库：
+### 1. 创建数据库
 
 ```sql
 create database mobile default character set utf8mb4;
 create database unicom default character set utf8mb4;
 ```
 
-然后分别导入脚本：
+### 2. 导入初始化脚本
 
 ```bash
 mysql -uroot -p mobile < mobile.sql
 mysql -uroot -p unicom < unicom.sql
 ```
 
-默认配置中使用的是：
+默认数据库配置：
 
 - 用户名：`root`
 - 密码：`123456`
 
-如需修改：
+如需修改，请调整：
 
 - `TelecomPro/src/main/resources/application.properties`
 - `UnicomPro/src/main/resources/db.properties`
 
-## 系统端口与接口
-
-### UnicomPro
-
-- 运行端口：`8080`
-- 页面入口：`http://localhost:8080/UnicomPro/home.jsp`
-- WSDL：`http://localhost:8080/UnicomPro/services/TransferSupportService?wsdl`
-
-### TelecomPro
-
-- 运行端口：`8081`
-- 页面入口：`http://localhost:8081/`
-- WSDL：`http://localhost:8081/services/TransferSupportService?wsdl`
-
-## 启动方式
-
-建议先启动 `UnicomPro`，再启动 `TelecomPro`。
-
-### 1. 启动 UnicomPro
-
-在 `UnicomPro` 目录执行：
+### 3. 启动 `UnicomPro`
 
 ```bash
+cd UnicomPro
 mvn tomcat7:run
 ```
 
-### 2. 启动 TelecomPro
+默认地址：
 
-在 `TelecomPro` 目录执行：
+- 页面：`http://localhost:8080/UnicomPro/home.jsp`
+- WSDL：`http://localhost:8080/UnicomPro/services/TransferSupportService?wsdl`
+
+### 4. 启动 `TelecomPro`
 
 ```bash
+cd TelecomPro
 mvn spring-boot:run
 ```
 
-## 页面使用方式
+默认地址：
 
-### 转入联通
+- 页面：`http://localhost:8081/`
+- WSDL：`http://localhost:8081/services/TransferSupportService?wsdl`
 
-1. 打开 `TelecomPro` 首页
-2. 目标运营商选择“转入联通”
-3. 提交手机号、余额、套餐说明、当前状态
-4. `TelecomPro` 调用 `UnicomPro` 的 SOAP 服务
-5. `UnicomPro` 完成：
-   - `mobile` 源库转出
-   - `unicom` 目标库更新或新增
+## 页面使用
 
-### 转入移动
+### `TelecomPro`
 
-1. 打开 `UnicomPro` 首页
-2. 在“转入移动”表单中填写信息
-3. `UnicomPro` 调用 `TelecomPro` 的 SOAP 服务
-4. `TelecomPro` 完成：
-   - `unicom` 源库转出
-   - `mobile` 目标库更新或新增
+- 访问首页后输入手机号
+- 点击提交后固定发起“转入联通”
+- 结果页展示成功或失败状态、手机号和下一步提示
 
-## 测试
+### `UnicomPro`
 
-### UnicomPro
+- 访问首页后输入手机号
+- 点击提交后固定发起“转入移动”
+- 页面下方展示统一风格的结果卡片
+
+## 测试与验证
+
+### `UnicomPro`
 
 ```bash
 cd UnicomPro
 mvn test
-```
-
-### TelecomPro
-
-```bash
-cd TelecomPro
-mvn test
-```
-
-## 编译验证
-
-### UnicomPro
-
-```bash
-cd UnicomPro
 mvn -DskipTests compile
 ```
 
-### TelecomPro
+### `TelecomPro`
 
 ```bash
 cd TelecomPro
+mvn test
 mvn -DskipTests compile
 ```
 
 ## 主要实现点
 
-- `UnicomPro` 服务端实现真实双库转网逻辑
-- `TelecomPro` 从纯客户端扩展为“客户端 + 服务端”
-- 双向 SOAP DTO、接口与调用网关
-- 双数据源配置
-- 仓储层按手机号查找、插入、更新
-- 服务层测试与控制器测试
+- 双向 SOAP 服务发布与调用
+- 双系统客户端 / 服务端双角色结构
+- 双数据库级联修改
+- 手机号单字段输入，服务端自动同步套餐资料
+- `TelecomPro` 双数据源配置修复
+- 双侧服务层与控制层测试
 
-## 说明
+## 常见说明
 
-本项目当前以教学作业实现为主，重点放在：
-
-- 双系统互调
-- WSDL 发布
-- 双库状态级联修改
-
-未引入分布式事务、消息队列或补偿机制。
+- 本项目以课程作业实现为主，重点是 SOAP 调用链路和双库状态同步
+- 当前没有引入分布式事务、消息补偿或消息队列
+- 如果只启动一个系统，对应的跨系统调用会失败，这是预期行为
