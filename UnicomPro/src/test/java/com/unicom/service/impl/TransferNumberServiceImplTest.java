@@ -24,18 +24,19 @@ public class TransferNumberServiceImplTest extends TestCase {
         mobileRepository.insert(record("13311111111", "10.00", "old", 0));
 
         TransferNumberServiceImpl service = new TransferNumberServiceImpl(mobileRepository, unicomRepository);
-        TransferResponse response = service.transferNumber(request("13311111111", "12.50", "new plan", 0));
+        TransferResponse response = service.transferNumber(request("13311111111"));
 
         assertTrue(response.isSuccess());
         assertEquals(Integer.valueOf(1), mobileRepository.findByPhoneNumber("13311111111").getStatus());
         assertEquals(Integer.valueOf(0), unicomRepository.findByPhoneNumber("13311111111").getStatus());
-        assertEquals("new plan", unicomRepository.findByPhoneNumber("13311111111").getOrderDesc());
+        assertEquals("old", unicomRepository.findByPhoneNumber("13311111111").getOrderDesc());
+        assertEquals(new BigDecimal("10.00"), unicomRepository.findByPhoneNumber("13311111111").getRemainMoney());
     }
 
     public void testShouldFailWhenSourceNumberMissing() {
         TransferNumberServiceImpl service = new TransferNumberServiceImpl(mobileRepository, unicomRepository);
 
-        TransferResponse response = service.transferNumber(request("13399999999", "12.50", "new plan", 0));
+        TransferResponse response = service.transferNumber(request("13399999999"));
 
         assertFalse(response.isSuccess());
         assertEquals("源运营商中不存在该号码。", response.getMessage());
@@ -71,12 +72,9 @@ public class TransferNumberServiceImplTest extends TestCase {
         return info;
     }
 
-    private TransferRequest request(String phoneNumber, String money, String orderDesc, int status) {
+    private TransferRequest request(String phoneNumber) {
         TransferRequest request = new TransferRequest();
         request.setCellPhoneNumber(phoneNumber);
-        request.setRemainMoney(new BigDecimal(money));
-        request.setOrderDesc(orderDesc);
-        request.setStatus(status);
         return request;
     }
 }

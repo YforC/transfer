@@ -1,8 +1,8 @@
 package com.telecom.controller;
 
+import com.telecom.client.TransferResponse;
 import com.telecom.model.CellPhoneInfo;
 import com.telecom.service.PhoneLookupGatewayService;
-import com.telecom.client.TransferResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -25,14 +25,10 @@ class TransferControllerTest {
 
     @Test
     void shouldCallUnicomGatewayWhenTargetCarrierIsUnicom() throws Exception {
-        when(phoneLookupGatewayService.submitToUnicom(any(CellPhoneInfo.class)))
-                .thenReturn(successResponse());
+        when(phoneLookupGatewayService.submitToUnicom(any(CellPhoneInfo.class))).thenReturn(successResponse());
 
         mockMvc.perform(post("/transfer/transferNumber")
                         .param("cellPhoneNumber", "13311111111")
-                        .param("remainMoney", "10.00")
-                        .param("orderDesc", "plan")
-                        .param("status", "0")
                         .param("targetCarrier", "UNICOM"))
                 .andExpect(status().isOk());
 
@@ -41,14 +37,10 @@ class TransferControllerTest {
 
     @Test
     void shouldCallMobileGatewayWhenTargetCarrierIsMobile() throws Exception {
-        when(phoneLookupGatewayService.submitToMobile(any(CellPhoneInfo.class)))
-                .thenReturn(successResponse());
+        when(phoneLookupGatewayService.submitToMobile(any(CellPhoneInfo.class))).thenReturn(successResponse());
 
         mockMvc.perform(post("/transfer/transferNumber")
                         .param("cellPhoneNumber", "13311111111")
-                        .param("remainMoney", "10.00")
-                        .param("orderDesc", "plan")
-                        .param("status", "0")
                         .param("targetCarrier", "MOBILE"))
                 .andExpect(status().isOk());
 

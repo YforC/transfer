@@ -38,19 +38,16 @@ public class TransferController {
         model.addAttribute("cellPhoneInfo", cellPhoneInfo);
 
         try {
-            TransferResponse response;
-            if ("MOBILE".equalsIgnoreCase(cellPhoneInfo.getTargetCarrier())) {
-                response = phoneLookupGatewayService.submitToMobile(cellPhoneInfo);
-            } else {
-                response = phoneLookupGatewayService.submitToUnicom(cellPhoneInfo);
-            }
+            TransferResponse response = "MOBILE".equalsIgnoreCase(cellPhoneInfo.getTargetCarrier())
+                    ? phoneLookupGatewayService.submitToMobile(cellPhoneInfo)
+                    : phoneLookupGatewayService.submitToUnicom(cellPhoneInfo);
             model.addAttribute("success", response.isSuccess());
             model.addAttribute("info", response.getMessage());
             model.addAttribute("nextStep", response.getNextStep());
         } catch (IllegalArgumentException ex) {
             model.addAttribute("success", false);
             model.addAttribute("info", ex.getMessage());
-            model.addAttribute("nextStep", "请修正输入信息后重新提交。");
+            model.addAttribute("nextStep", "检查手机号后重试。");
         }
 
         return "phone-transfer-result";

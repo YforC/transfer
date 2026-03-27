@@ -27,23 +27,23 @@ class TransferNumberServiceImplTest {
 
     @Test
     void shouldTransferFromUnicomToMobile() {
-        mobileRepository.insert(record("13312345678", "0.00", "placeholder", 1));
         unicomRepository.insert(record("13312345678", "10.00", "old", 0));
 
         TransferNumberServiceImpl service = new TransferNumberServiceImpl(unicomRepository, mobileRepository);
-        TransferResponse response = service.transferNumber(request("13312345678", "19.00", "mobile-plan"));
+        TransferResponse response = service.transferNumber(request("13312345678"));
 
         assertTrue(response.isSuccess());
         assertEquals(1, unicomRepository.findByPhoneNumber("13312345678").getStatus());
         assertEquals(0, mobileRepository.findByPhoneNumber("13312345678").getStatus());
-        assertEquals("mobile-plan", mobileRepository.findByPhoneNumber("13312345678").getOrderDesc());
+        assertEquals("old", mobileRepository.findByPhoneNumber("13312345678").getOrderDesc());
+        assertEquals(new BigDecimal("10.00"), mobileRepository.findByPhoneNumber("13312345678").getRemainMoney());
     }
 
     @Test
     void shouldFailWhenSourceNumberMissing() {
         TransferNumberServiceImpl service = new TransferNumberServiceImpl(unicomRepository, mobileRepository);
 
-        TransferResponse response = service.transferNumber(request("13399999999", "19.00", "mobile-plan"));
+        TransferResponse response = service.transferNumber(request("13399999999"));
 
         assertFalse(response.isSuccess());
         assertEquals("源运营商中不存在该号码。", response.getMessage());
@@ -79,12 +79,9 @@ class TransferNumberServiceImplTest {
         return info;
     }
 
-    private TransferRequest request(String phoneNumber, String money, String orderDesc) {
+    private TransferRequest request(String phoneNumber) {
         TransferRequest request = new TransferRequest();
         request.setCellPhoneNumber(phoneNumber);
-        request.setRemainMoney(new BigDecimal(money));
-        request.setOrderDesc(orderDesc);
-        request.setStatus(0);
         return request;
     }
 }

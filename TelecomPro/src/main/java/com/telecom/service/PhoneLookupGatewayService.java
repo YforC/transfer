@@ -24,9 +24,6 @@ public class PhoneLookupGatewayService {
 
         TransferRequest request = new TransferRequest();
         request.setCellPhoneNumber(form.getCellPhoneNumber().trim());
-        request.setRemainMoney(form.getRemainMoney());
-        request.setOrderDesc(form.getOrderDesc());
-        request.setStatus(form.getStatus());
 
         try {
             JaxWsProxyFactoryBean factoryBean = new JaxWsProxyFactoryBean();
@@ -36,7 +33,7 @@ public class PhoneLookupGatewayService {
                     (com.telecom.client.TransferNumberService) factoryBean.create();
             return client.transferNumber(request);
         } catch (Exception ex) {
-            return failure("联通服务暂不可用。", "请确认 " + unicomServiceAddress + " 可访问后重试。");
+            return failure("联通服务暂不可用。", "请确认服务地址可访问后重试。");
         }
     }
 
@@ -45,9 +42,6 @@ public class PhoneLookupGatewayService {
 
         com.telecom.ws.TransferRequest request = new com.telecom.ws.TransferRequest();
         request.setCellPhoneNumber(form.getCellPhoneNumber().trim());
-        request.setRemainMoney(form.getRemainMoney());
-        request.setOrderDesc(form.getOrderDesc());
-        request.setStatus(form.getStatus());
 
         try {
             JaxWsProxyFactoryBean factoryBean = new JaxWsProxyFactoryBean();
@@ -62,13 +56,13 @@ public class PhoneLookupGatewayService {
             response.setNextStep(wsResponse.getNextStep());
             return response;
         } catch (Exception ex) {
-            return failure("移动服务暂不可用。", "请确认 " + telecomServiceAddress + " 可访问后重试。");
+            return failure("移动服务暂不可用。", "请确认服务地址可访问后重试。");
         }
     }
 
     private void validate(CellPhoneInfo form) {
         if (form == null) {
-            throw new IllegalArgumentException("申请信息不能为空。");
+            throw new IllegalArgumentException("请输入手机号。");
         }
         if (form.getCellPhoneNumber() == null || !form.getCellPhoneNumber().trim().matches("^1\\d{10}$")) {
             throw new IllegalArgumentException("请输入正确的 11 位手机号。");

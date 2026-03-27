@@ -2,125 +2,189 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>携号转网信息录入</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>携号转网</title>
     <style>
+        :root {
+            --surface: #dfe5ec;
+            --surface-soft: #e7ecf2;
+            --text: #314252;
+            --muted: #6f7f90;
+            --accent: #58738f;
+            --shadow-high: -14px -14px 30px rgba(255,255,255,.9);
+            --shadow-low: 14px 14px 30px rgba(163,177,198,.55);
+            --shadow-inset: inset 8px 8px 16px rgba(163,177,198,.45), inset -8px -8px 16px rgba(255,255,255,.9);
+        }
+
+        * { box-sizing: border-box; }
+
         body {
-            font-family: "Microsoft YaHei", Arial, sans-serif;
             margin: 0;
-            background: linear-gradient(160deg, #eef4ff 0%, #f8fbff 55%, #ffffff 100%);
-            color: #1f2937;
+            min-height: 100vh;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            background: radial-gradient(circle at top left, #edf1f6 0%, var(--surface) 45%, #d4dbe3 100%);
+            color: var(--text);
+            display: grid;
+            place-items: center;
+            padding: 24px;
         }
-        .container {
-            max-width: 720px;
-            margin: 48px auto;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 32px;
-            border-radius: 18px;
-            box-shadow: 0 18px 48px rgba(15, 23, 42, 0.12);
+
+        .shell {
+            width: min(100%, 460px);
+            padding: 30px;
+            border-radius: 32px;
+            background: var(--surface);
+            box-shadow: var(--shadow-high), var(--shadow-low);
         }
+
+        .brand {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 20px;
+            border-radius: 24px;
+            background: var(--surface);
+            box-shadow: var(--shadow-inset);
+            display: grid;
+            place-items: center;
+            color: var(--accent);
+            font-size: 24px;
+            font-weight: 700;
+        }
+
         h1 {
-            margin-top: 0;
-            margin-bottom: 8px;
+            margin: 0;
             text-align: center;
-            color: #0f4c81;
+            font-size: 30px;
+            letter-spacing: 2px;
         }
-        .subtitle {
+
+        .sub {
+            margin: 10px 0 26px;
             text-align: center;
-            color: #6b7280;
-            margin-bottom: 28px;
-            line-height: 1.7;
-        }
-        .form-group {
-            margin-bottom: 18px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-        input[type=text], input[type=number], select {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid #d7deea;
-            border-radius: 10px;
-            box-sizing: border-box;
+            color: var(--muted);
             font-size: 14px;
-            background: #fbfdff;
         }
-        input[type=submit] {
-            width: 100%;
-            padding: 14px;
-            background: #1368ce;
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
+
+        .switch {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .switch label {
+            display: block;
             cursor: pointer;
         }
-        .info-text {
-            color: #6b7280;
-            font-size: 12px;
-            margin-top: 6px;
+
+        .switch input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
         }
-        .service-box {
-            margin-top: 22px;
-            padding: 14px 16px;
-            border-radius: 12px;
-            background: #eef6ff;
-            color: #1d4f91;
-            line-height: 1.7;
+
+        .switch span {
+            display: block;
+            min-height: 48px;
+            padding: 14px 12px;
+            border-radius: 18px;
+            text-align: center;
+            color: var(--muted);
+            background: var(--surface);
+            box-shadow: var(--shadow-high), var(--shadow-low);
+            transition: .2s ease;
+        }
+
+        .switch input:checked + span {
+            color: var(--text);
+            box-shadow: var(--shadow-inset);
+        }
+
+        .field {
+            margin-bottom: 22px;
+        }
+
+        .field label {
+            display: block;
+            margin: 0 0 10px 6px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .field input {
+            width: 100%;
+            min-height: 54px;
+            border: 0;
+            outline: none;
+            border-radius: 20px;
+            padding: 0 18px;
+            font-size: 18px;
+            color: var(--text);
+            background: var(--surface);
+            box-shadow: var(--shadow-inset);
+        }
+
+        .field input:focus {
+            box-shadow: var(--shadow-inset), 0 0 0 3px rgba(88,115,143,.18);
+        }
+
+        .action {
+            width: 100%;
+            min-height: 56px;
+            border: 0;
+            border-radius: 20px;
+            font-size: 16px;
+            color: #f7fbff;
+            background: linear-gradient(145deg, #6d88a3, #4f677f);
+            box-shadow: 10px 10px 22px rgba(145,157,175,.55), -10px -10px 22px rgba(255,255,255,.8);
+            cursor: pointer;
+        }
+
+        .action:hover { transform: translateY(-1px); }
+        .action:active { box-shadow: var(--shadow-inset); transform: translateY(0); }
+        .action:focus-visible { outline: 3px solid rgba(88,115,143,.28); outline-offset: 4px; }
+
+        .service {
+            margin-top: 18px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        @media (max-width: 520px) {
+            .shell { padding: 24px 18px; border-radius: 26px; }
+            h1 { font-size: 26px; }
+            .switch { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>携号转网信息录入</h1>
-    <div class="subtitle">
-        请选择目标运营商并提交号码信息，后端会按运营商规则同步修改 `mobile` / `unicom` 两个库。
-    </div>
+<div class="shell">
+    <div class="brand">MNP</div>
+    <h1>携号转网</h1>
+    <div class="sub">输入手机号即可</div>
 
     <form th:action="@{/transfer/transferNumber}" method="post" th:object="${cellPhoneInfo}">
-        <div class="form-group">
-            <label for="targetCarrier">目标运营商</label>
-            <select id="targetCarrier" th:field="*{targetCarrier}" required>
-                <option value="UNICOM">转入联通</option>
-                <option value="MOBILE">转入移动</option>
-            </select>
-            <div class="info-text">转入联通会调用 UnicomPro，转入移动会调用 TelecomPro 本地服务端。</div>
+        <div class="switch" role="radiogroup" aria-label="目标运营商">
+            <label>
+                <input type="radio" th:field="*{targetCarrier}" value="UNICOM" />
+                <span>转入联通</span>
+            </label>
+            <label>
+                <input type="radio" th:field="*{targetCarrier}" value="MOBILE" />
+                <span>转入移动</span>
+            </label>
         </div>
 
-        <div class="form-group">
+        <div class="field">
             <label for="cellPhoneNumber">手机号</label>
-            <input type="text" id="cellPhoneNumber" th:field="*{cellPhoneNumber}" pattern="[0-9]{11}" maxlength="11" required />
+            <input id="cellPhoneNumber" type="text" th:field="*{cellPhoneNumber}" maxlength="11" inputmode="numeric" placeholder="11位手机号" required />
         </div>
 
-        <div class="form-group">
-            <label for="remainMoney">账户余额</label>
-            <input type="number" id="remainMoney" th:field="*{remainMoney}" step="0.01" min="0" required />
-        </div>
-
-        <div class="form-group">
-            <label for="orderDesc">套餐说明</label>
-            <input type="text" id="orderDesc" th:field="*{orderDesc}" required />
-        </div>
-
-        <div class="form-group">
-            <label for="status">当前状态</label>
-            <select id="status" th:field="*{status}" required>
-                <option value="0">当前运营商号码</option>
-                <option value="1">已转出号码</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <input type="submit" value="提交携号转网信息" />
-        </div>
+        <button class="action" type="submit">立即转网</button>
     </form>
 
-    <div class="service-box">
-        当前联通服务地址：<span th:text="${serviceAddress}"></span>
-    </div>
+    <div class="service" th:text="${serviceAddress}"></div>
 </div>
 </body>
 </html>
