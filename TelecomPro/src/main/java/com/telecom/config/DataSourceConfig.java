@@ -3,7 +3,7 @@ package com.telecom.config;
 import com.telecom.repository.CellPhoneInfoRepository;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,16 +11,28 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 @Configuration
 public class DataSourceConfig {
-    @Bean("mobileDataSource")
+    @Bean
     @ConfigurationProperties("mobile.datasource")
-    public DataSource mobileDataSource() {
-        return DataSourceBuilder.create().build();
+    public DataSourceProperties mobileDataSourceProperties() {
+        return new DataSourceProperties();
+    }
+
+    @Bean
+    @ConfigurationProperties("unicom.datasource")
+    public DataSourceProperties unicomDataSourceProperties() {
+        return new DataSourceProperties();
+    }
+
+    @Bean("mobileDataSource")
+    public DataSource mobileDataSource(
+            @Qualifier("mobileDataSourceProperties") DataSourceProperties properties) {
+        return properties.initializeDataSourceBuilder().build();
     }
 
     @Bean("unicomDataSource")
-    @ConfigurationProperties("unicom.datasource")
-    public DataSource unicomDataSource() {
-        return DataSourceBuilder.create().build();
+    public DataSource unicomDataSource(
+            @Qualifier("unicomDataSourceProperties") DataSourceProperties properties) {
+        return properties.initializeDataSourceBuilder().build();
     }
 
     @Bean("mobileJdbcTemplate")
